@@ -6,7 +6,6 @@ import Iter "mo:base/Iter";
 import Debug "mo:base/Debug";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Error "mo:base/Error";
 
 actor CryptoPortfolio {
   type CryptoData = {
