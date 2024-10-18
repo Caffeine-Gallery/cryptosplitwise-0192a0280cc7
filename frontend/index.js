@@ -27,7 +27,6 @@ document.getElementById('investment-form').addEventListener('submit', async (e) 
             if (result && Array.isArray(result) && result.length > 0) {
                 console.log('Displaying allocation');
                 displayAllocation(result);
-                showSuccessMessage();
             } else {
                 console.error('Invalid or empty allocation data');
                 resultsDiv.innerHTML = '<p>Unable to calculate allocation. Please try again.</p>';
@@ -76,13 +75,6 @@ function hideLoadingSpinner() {
     if (spinner) {
         spinner.remove();
     }
-}
-
-function showSuccessMessage() {
-    const successMessage = document.createElement('p');
-    successMessage.textContent = 'Allocation calculated successfully!';
-    successMessage.className = 'success-message';
-    document.getElementById('allocation-results').prepend(successMessage);
 }
 
 // Add this line at the end of the file to check if the actor is correctly created
