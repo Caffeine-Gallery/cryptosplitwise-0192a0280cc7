@@ -1,4 +1,12 @@
 import { backend } from 'declarations/backend';
+import { Actor, HttpAgent } from '@dfinity/agent';
+
+// Initialize the agent and actor
+const agent = new HttpAgent();
+const backendActor = Actor.createActor(backend.idlFactory, {
+  agent,
+  canisterId: process.env.BACKEND_CANISTER_ID,
+});
 
 document.getElementById('investment-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -8,17 +16,28 @@ document.getElementById('investment-form').addEventListener('submit', async (e) 
     if (investmentAmount > 0) {
         try {
             resultsDiv.innerHTML = '<p>Loading allocation data...</p>';
-            const result = await backend.calculateAllocation(investmentAmount);
-            switch (result.tag) {
-                case 'ok':
-                    displayAllocation(result.val);
-                    createPieChart(result.val);
-                    break;
-                case 'err':
-                    throw new Error(result.val);
+            showLoadingSpinner();
+
+            // Add a timeout to the API call
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timed out')), 15000)
+            );
+            const resultPromise = backendActor.calculateAllocation(investmentAmount);
+            const result = await Promise.race([resultPromise, timeoutPromise]);
+
+            hideLoadingSpinner();
+
+            if ('ok' in result) {
+                displayAllocation(result.ok);
+                createPieChart(result.ok);
+            } else if ('err' in result) {
+                throw new Error(result.err);
+            } else {
+                throw new Error('Unexpected response format');
             }
         } catch (error) {
             console.error('Error calculating allocation:', error);
+            hideLoadingSpinner();
             resultsDiv.innerHTML = `<p>An error occurred while calculating the allocation: ${error.message}</p>`;
         }
     } else {
@@ -79,4 +98,18 @@ function createPieChart(allocation) {
         ctx.font = '12px Arial';
         ctx.fillText(crypto, x, y);
     });
+}
+
+function showLoadingSpinner() {
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    spinner.id = 'loading-spinner';
+    document.body.appendChild(spinner);
+}
+
+function hideLoadingSpinner() {
+    const spinner = document.getElementById('loading-spinner');
+    if (spinner) {
+        spinner.remove();
+    }
 }
