@@ -3,14 +3,16 @@ import { backend } from 'declarations/backend';
 document.getElementById('investment-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const investmentAmount = parseFloat(document.getElementById('investment-amount').value);
+    const resultsDiv = document.getElementById('allocation-results');
     
     if (investmentAmount > 0) {
         try {
+            resultsDiv.innerHTML = '<p>Loading allocation data...</p>';
             const allocation = await backend.calculateAllocation(investmentAmount);
             displayAllocation(allocation);
         } catch (error) {
             console.error('Error calculating allocation:', error);
-            alert('An error occurred while calculating the allocation. Please try again.');
+            resultsDiv.innerHTML = '<p>An error occurred while calculating the allocation. Please try again later.</p>';
         }
     } else {
         alert('Please enter a valid investment amount.');
