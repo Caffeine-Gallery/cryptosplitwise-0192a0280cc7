@@ -1,0 +1,6 @@
+service : {
+  calculateAllocation: (float64) -> (vec record {
+                                           text;
+                                           float64;
+                                         });
+}
