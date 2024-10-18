@@ -27,7 +27,7 @@ document.getElementById('investment-form').addEventListener('submit', async (e) 
             if (result && Array.isArray(result) && result.length > 0) {
                 console.log('Displaying allocation');
                 displayAllocation(result);
-                createPieChart(result);
+                showSuccessMessage();
             } else {
                 console.error('Invalid or empty allocation data');
                 resultsDiv.innerHTML = '<p>Unable to calculate allocation. Please try again.</p>';
@@ -64,41 +64,6 @@ function displayAllocation(allocation) {
     tableDiv.appendChild(table);
 }
 
-function createPieChart(allocation) {
-    console.log('Creating pie chart');
-    const canvas = document.getElementById('allocation-chart');
-    const ctx = canvas.getContext('2d');
-    const total = allocation.reduce((sum, [_, amount]) => sum + amount, 0);
-    let startAngle = 0;
-
-    const colors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-        '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384',
-        '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-        '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384', '#36A2EB'
-    ];
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    allocation.forEach(([crypto, amount], index) => {
-        const sliceAngle = (amount / total) * 2 * Math.PI;
-        ctx.beginPath();
-        ctx.arc(200, 200, 180, startAngle, startAngle + sliceAngle);
-        ctx.lineTo(200, 200);
-        ctx.fillStyle = colors[index % colors.length];
-        ctx.fill();
-        startAngle += sliceAngle;
-
-        // Add labels
-        const middleAngle = startAngle - sliceAngle / 2;
-        const x = 200 + Math.cos(middleAngle) * 220;
-        const y = 200 + Math.sin(middleAngle) * 220;
-        ctx.fillStyle = '#000';
-        ctx.font = '12px Arial';
-        ctx.fillText(crypto, x, y);
-    });
-}
-
 function showLoadingSpinner() {
     const spinner = document.createElement('div');
     spinner.className = 'spinner';
@@ -111,6 +76,13 @@ function hideLoadingSpinner() {
     if (spinner) {
         spinner.remove();
     }
+}
+
+function showSuccessMessage() {
+    const successMessage = document.createElement('p');
+    successMessage.textContent = 'Allocation calculated successfully!';
+    successMessage.className = 'success-message';
+    document.getElementById('allocation-results').prepend(successMessage);
 }
 
 // Add this line at the end of the file to check if the actor is correctly created
