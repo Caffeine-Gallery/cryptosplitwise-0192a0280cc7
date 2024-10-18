@@ -1,5 +1,4 @@
 import Int "mo:base/Int";
-import Result "mo:base/Result";
 
 import Array "mo:base/Array";
 import Float "mo:base/Float";
@@ -54,23 +53,20 @@ actor CryptoPortfolio {
     cryptoCache
   };
 
-  public func calculateAllocation(investmentAmount : Float) : async Result.Result<[(Text, Float)], Text> {
-    try {
-      let cryptoData = getCachedOrFetchCryptoData();
-      
-      let totalMarketCap = Array.foldLeft<CryptoData, Float>(cryptoData, 0, func (acc, crypto) {
-        acc + crypto.marketCap
-      });
-      
-      let allocation = Array.map<CryptoData, (Text, Float)>(cryptoData, func(crypto) {
-        let allocation = (crypto.marketCap / totalMarketCap) * investmentAmount;
-        (crypto.symbol, allocation)
-      });
+  public query func calculateAllocation(investmentAmount : Float) : async [(Text, Float)] {
+    Debug.print("Calculating allocation for investment amount: " # Float.toText(investmentAmount));
+    let cryptoData = getCachedOrFetchCryptoData();
+    
+    let totalMarketCap = Array.foldLeft<CryptoData, Float>(cryptoData, 0, func (acc, crypto) {
+      acc + crypto.marketCap
+    });
+    
+    let allocation = Array.map<CryptoData, (Text, Float)>(cryptoData, func(crypto) {
+      let allocation = (crypto.marketCap / totalMarketCap) * investmentAmount;
+      (crypto.symbol, allocation)
+    });
 
-      #ok(allocation)
-    } catch (e) {
-      Debug.print("Error in calculateAllocation: " # Error.message(e));
-      #err("An unexpected error occurred while calculating the allocation.")
-    }
+    Debug.print("Allocation calculated: " # debug_show(allocation));
+    allocation
   };
 }

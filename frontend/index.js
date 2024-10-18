@@ -5,7 +5,7 @@ import { Actor, HttpAgent } from '@dfinity/agent';
 const agent = new HttpAgent();
 const backendActor = Actor.createActor(backend.idlFactory, {
   agent,
-  canisterId: process.env.BACKEND_CANISTER_ID,
+  canisterId: process.env.CANISTER_ID_BACKEND,
 });
 
 document.getElementById('investment-form').addEventListener('submit', async (e) => {
@@ -18,22 +18,19 @@ document.getElementById('investment-form').addEventListener('submit', async (e) 
             resultsDiv.innerHTML = '<p>Loading allocation data...</p>';
             showLoadingSpinner();
 
-            // Add a timeout to the API call
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Request timed out')), 15000)
-            );
-            const resultPromise = backendActor.calculateAllocation(investmentAmount);
-            const result = await Promise.race([resultPromise, timeoutPromise]);
+            console.log('Calling backend with investment amount:', investmentAmount);
+            const result = await backendActor.calculateAllocation(investmentAmount);
+            console.log('Backend response:', result);
 
             hideLoadingSpinner();
 
-            if ('ok' in result) {
-                displayAllocation(result.ok);
-                createPieChart(result.ok);
-            } else if ('err' in result) {
-                throw new Error(result.err);
+            if (result && Array.isArray(result) && result.length > 0) {
+                console.log('Displaying allocation');
+                displayAllocation(result);
+                createPieChart(result);
             } else {
-                throw new Error('Unexpected response format');
+                console.error('Invalid or empty allocation data');
+                resultsDiv.innerHTML = '<p>Unable to calculate allocation. Please try again.</p>';
             }
         } catch (error) {
             console.error('Error calculating allocation:', error);
@@ -46,6 +43,7 @@ document.getElementById('investment-form').addEventListener('submit', async (e) 
 });
 
 function displayAllocation(allocation) {
+    console.log('Displaying allocation:', allocation);
     const tableDiv = document.getElementById('allocation-table');
     tableDiv.innerHTML = '<h2>Allocation Results</h2>';
     
@@ -67,6 +65,7 @@ function displayAllocation(allocation) {
 }
 
 function createPieChart(allocation) {
+    console.log('Creating pie chart');
     const canvas = document.getElementById('allocation-chart');
     const ctx = canvas.getContext('2d');
     const total = allocation.reduce((sum, [_, amount]) => sum + amount, 0);
@@ -113,3 +112,6 @@ function hideLoadingSpinner() {
         spinner.remove();
     }
 }
+
+// Add this line at the end of the file to check if the actor is correctly created
+console.log('Backend actor:', backendActor);

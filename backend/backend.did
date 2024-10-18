@@ -1,11 +1,6 @@
-type Result = 
- variant {
-   err: text;
-   ok: vec record {
-             text;
-             float64;
-           };
- };
 service : {
-  calculateAllocation: (float64) -> (Result);
+  calculateAllocation: (float64) -> (vec record {
+                                           text;
+                                           float64;
+                                         }) query;
 }
