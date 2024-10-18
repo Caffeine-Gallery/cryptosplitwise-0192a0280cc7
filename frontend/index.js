@@ -8,12 +8,18 @@ document.getElementById('investment-form').addEventListener('submit', async (e) 
     if (investmentAmount > 0) {
         try {
             resultsDiv.innerHTML = '<p>Loading allocation data...</p>';
-            const allocation = await backend.calculateAllocation(investmentAmount);
-            displayAllocation(allocation);
-            createPieChart(allocation);
+            const result = await backend.calculateAllocation(investmentAmount);
+            switch (result.tag) {
+                case 'ok':
+                    displayAllocation(result.val);
+                    createPieChart(result.val);
+                    break;
+                case 'err':
+                    throw new Error(result.val);
+            }
         } catch (error) {
             console.error('Error calculating allocation:', error);
-            resultsDiv.innerHTML = '<p>An error occurred while calculating the allocation. Please try again later.</p>';
+            resultsDiv.innerHTML = `<p>An error occurred while calculating the allocation: ${error.message}</p>`;
         }
     } else {
         alert('Please enter a valid investment amount.');
